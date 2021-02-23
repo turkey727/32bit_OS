@@ -1,7 +1,7 @@
 	BOOT_LOAD	equ	0x7C00  ;ブートプログラムのロード位置
 	ORG	BOOT_LOAD;		;これで、最初にロードするアドレスをアセンブラに指示
 
-%include	".\include\macro.s"	;cdecl呼び出し規約をマクロで設定
+%include	"..\include\macro.s"
 
 entry:
 	jmp	ipl         		;最初はiplから処理
@@ -23,20 +23,18 @@ ipl:
 					;ストレージデバイスの番号が設定されており、
 					;それを指定したアドレスに保存し、今後も使っていく。
 
-	cdecl	putc, word 'H'
-	cdecl	putc, word 'e'
-	cdecl	putc, word 'l'
-	cdecl	putc, word 'l'
-	cdecl	putc, word 'o'
-	cdecl	putc, word '!'
+	cdecl	puts, .s0
 
 	jmp	$;
+
+.s0	db	"Booting now...", 0x0A, 0x0D, 0		;データを定義するdb疑似命令で、
+							;出力する文字列を.s0として定義
 
 ALIGN 2, db 0
 BOOT:
 .DRIVE:	dw 0;
 
-%include	".\modules\real\putc.s"	;putc.sを使えるように
+%include	"..\modules\real\puts.s"	;putsを使えるようにする
 
 	times 	510 - ($ - $$) db 0x00;
 	db	0x55, 0xAA;
