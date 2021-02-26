@@ -26,7 +26,7 @@ ipl:
 	cdecl	puts, .s0
 	
 	mov	bx, BOOT_SECT - 1		;HDDのロードできる残りのセクタ数
-	mov	cx, BOOT_LOAD + SECT_SIZE	;次に読み込むブートプログラムのアドレス(0x7c00 + 512)
+	mov	cx, BOOT_LOAD + SECT_SIZE	;0x7c00 + 512
 	
 	cdecl	read_chs, BOOT, bx, cx		;AXにread_chs(BOOT, bx, cx)の戻り値が入る
 
@@ -43,27 +43,55 @@ ipl:
 ALIGN 2, db 0
 BOOT:
 	istruc	drive
-	    at	drive.no,	dw 0	;ドライブ番号
-	    at	drive.cyln,	dw 0	;シリンダ
-	    at	drive.head,	dw 0	;ヘッド
-	    at	drive.sect,	dw 2	;セクタ
+	    at	drive.no,	dw 0
+	    at	drive.cyln,	dw 0
+	    at	drive.head,	dw 0
+	    at	drive.sect,	dw 2
 	iend
 
+
 %include	"..\modules\real\puts.s"
-%include	"..\modules\real\itoa.s"
 %include	"..\modules\real\reboot.s"
 %include	"..\modules\real\read_chs.s"
 
-	times 	510 - ($ - $$) db 0x00;
-	db	0x55, 0xAA;
+	times 	510 - ($ - $$) db 0x00
+	db	0x55, 0xAA
+
+%include	"..\modules\real\get_drive_param.s"
+%include	"..\modules\real\itoa.s"
 
 stage_2:
 	cdecl	puts, .s0
+
+;以下.10Eまで、ドライブパラメータを取得する処理
+	cdecl	get_drive_param, BOOT
+	cmp	ax, 0		;もし成功したら、.10Eにジャンプ
+.10Q:	jne	.10E
+.10T:	cdecl	puts, .e0	;失敗したら再起動処理
+	call	reboot
+.10E:
+
+;以下、取得したドライブパラメータを表示する処理
+	mov	ax, [BOOT + drive.no]
+	cdecl	itoa, ax, .p1, 2, 16, 0b0100
+	mov	ax, [BOOT + drive.cyln]
+	cdecl	itoa, ax, .p2, 4, 16, 0b0100
+	mov	ax, [BOOT + drive.head]
+	cdecl	itoa, ax, .p3, 2, 16, 0b0100
+	mov	ax, [BOOT + drive.sect]
+	cdecl	itoa, ax, .p4, 2, 16, 0b0100
+	cdecl	puts, .s1
 
 	jmp	$;
 
 .s0	db	"start 2nd stage...", 0x0A, 0x0D, 0
 
-	times BOOT_SIZE - ($ - $$) db 0
+.s1	db	" Drive:0x"
+.p1	db	"  , Cyln:0x"
+.p2	db	"    , Head:0x"
+.p3	db	"  , Sect:0x"
+.p4	db	"  ", 0x0A, 0x0D, 0
 
-	
+.e0	db	"Can't get drive parameter.", 0
+
+	times BOOT_SIZE - ($ - $$) db 0
