@@ -1,4 +1,4 @@
-	BOOT_LOAD	equ	0x7C00  ;ブートプログラムのロード位置
+ 	BOOT_LOAD	equ	0x7C00  ;ブートプログラムのロード位置
 	ORG	BOOT_LOAD;		;これで、最初にロードするアドレスをアセンブラに指示
 
 %include	"..\include\macro.s"
@@ -25,16 +25,38 @@ ipl:
 
 	cdecl	puts, .s0
 
+	cdecl	itoa,	8086, .s1, 8, 10, 0b0001
+	cdecl	puts, .s1
+
+	cdecl	itoa,	8086, .s1, 8, 10, 0b0011
+	cdecl	puts, .s1
+
+	cdecl	itoa,	-8086, .s1, 8, 10, 0b0001
+	cdecl	puts, .s1
+
+	cdecl	itoa,	-1, .s1, 8, 10, 0b0001
+	cdecl	puts, .s1
+
+	cdecl	itoa,	-1, .s1, 8, 10, 0b0000
+	cdecl	puts, .s1
+
+	cdecl	itoa,	-1, .s1, 8, 16, 0b0000
+	cdecl	puts, .s1
+
+	cdecl	itoa,	12, .s1, 8, 2, 0b0100
+	cdecl	puts, .s1
+
 	jmp	$;
 
-.s0	db	"Booting now...", 0x0A, 0x0D, 0		;データを定義するdb疑似命令で、
-							;出力する文字列を.s0として定義
+.s0	db	"Booting now...", 0x0A, 0x0D, 0
+.s1	db	"--------", 0x0A, 0x0D, 0
 
 ALIGN 2, db 0
 BOOT:
 .DRIVE:	dw 0;
 
-%include	"..\modules\real\puts.s"	;putsを使えるようにする
+%include	"..\modules\real\puts.s"
+%include	"..\modules\real\itoa.s"
 
 	times 	510 - ($ - $$) db 0x00;
 	db	0x55, 0xAA;
