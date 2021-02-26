@@ -1,3 +1,4 @@
+;cdecl呼び出し規約を実装するためのコード
 %macro	cdecl 1-*.nolist	;1-*で、可変長引数を扱えるように
 
 ;以下6行、スタックに引数をプッシュする処理
@@ -18,3 +19,11 @@
 	%endif
 
 %endmacro
+
+;セクタ読み出しを関数で行うために各パラメータを構造体でまとめる
+struc drive
+	.no	resw	1	;ドライブ番号
+	.cyln	resw	1	;シリンダ
+	.head	resw	1	;ヘッダ
+	.sect	resw	1	;セクタ
+endstruc
