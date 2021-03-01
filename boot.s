@@ -1,3 +1,5 @@
+;---------------------------1st stage------------------------------------
+
 %include	"..\include\define.s"
 %include	"..\include\macro.s"
 
@@ -35,7 +37,7 @@ ipl:
 .10T:	cdecl	puts, .e0
 	call	reboot
 .10E:
-	jmp	stage_2
+	jmp	stage_2nd
 
 .s0	db	"Booting now...", 0x0A, 0x0D, 0
 .e0	db	"Error:Failed to read of sector", 0
@@ -57,10 +59,17 @@ BOOT:
 	times 	510 - ($ - $$) db 0x00
 	db	0x55, 0xAA
 
+FONT:
+.seg:	dw  0
+.off:	dw  0
+
+;-----------------------------2nd stage---------------------------------
+
 %include	"..\modules\real\get_drive_param.s"
 %include	"..\modules\real\itoa.s"
+%include	"..\modules\real\get_font_addr.s"
 
-stage_2:
+stage_2nd:
 	cdecl	puts, .s0
 
 ;以下.10Eまで、ドライブパラメータを取得する処理
@@ -82,7 +91,7 @@ stage_2:
 	cdecl	itoa, ax, .p4, 2, 16, 0b0100
 	cdecl	puts, .s1
 
-	jmp	$;
+	jmp	stage_3rd		;次のブートプログラムを実行
 
 .s0	db	"start 2nd stage...", 0x0A, 0x0D, 0
 
@@ -93,5 +102,25 @@ stage_2:
 .p4	db	"  ", 0x0A, 0x0D, 0
 
 .e0	db	"Can't get drive parameter.", 0
+
+;-----------------------------------3rd stage-------------------------------------
+
+stage_3rd:
+	cdecl	puts, .s0
+
+	cdecl	get_font_addr, FONT
+
+	cdecl	itoa, word [FONT.seg], .p1, 4, 16, 0b0100
+	cdecl	itoa, word [FONT.off], .p2, 4, 16, 0b0100
+	cdecl	puts, .s1
+
+	jmp	$
+
+.s0	db	"start 3rd stage...", 0x0A, 0x0D, 0
+
+.s1:	db	"  Font Address = "
+.p1:	db	"ZZZZ:"
+.p2:	db	"ZZZZ", 0x0A, 0x0D, 0
+	db	0x0A, 0x0D, 0
 
 	times BOOT_SIZE - ($ - $$) db 0
