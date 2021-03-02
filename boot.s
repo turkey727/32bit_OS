@@ -62,12 +62,16 @@ BOOT:
 FONT:
 .seg:	dw  0
 .off:	dw  0
+ACPI_DATA:
+.addr:	dd  0
+.len:	dd  0
 
 ;-----------------------------2nd stage---------------------------------
 
 %include	"..\modules\real\get_drive_param.s"
 %include	"..\modules\real\itoa.s"
 %include	"..\modules\real\get_font_addr.s"
+%include	"..\modules\real\get_mem_info.s"
 
 stage_2nd:
 	cdecl	puts, .s0
@@ -114,6 +118,18 @@ stage_3rd:
 	cdecl	itoa, word [FONT.off], .p2, 4, 16, 0b0100
 	cdecl	puts, .s1
 
+	cdecl	get_mem_info
+
+	mov	eax, [ACPI_DATA.addr]
+	cmp	eax, 0
+	je	.10E
+
+	cdecl	itoa, ax, .p4, 4, 16, 0b0100
+	shr	eax, 16
+	cdecl	itoa, ax, .p3, 4, 16, 0b0100
+	cdecl	puts, .s2
+.10E:
+
 	jmp	$
 
 .s0	db	"start 3rd stage...", 0x0A, 0x0D, 0
@@ -122,5 +138,9 @@ stage_3rd:
 .p1:	db	"ZZZZ:"
 .p2:	db	"ZZZZ", 0x0A, 0x0D, 0
 	db	0x0A, 0x0D, 0
+
+.s2:	db	" ACPI data = "
+.p3	db	"ZZZZ"
+.p4	db	"ZZZZ", 0x0A, 0x0D, 0
 
 	times BOOT_SIZE - ($ - $$) db 0
