@@ -130,7 +130,7 @@ stage_3rd:
 	cdecl	puts, .s2
 .10E:
 
-	jmp	$
+	jmp	stage_4th
 
 .s0	db	"start 3rd stage...", 0x0A, 0x0D, 0
 
@@ -142,5 +142,38 @@ stage_3rd:
 .s2:	db	" ACPI data = "
 .p3	db	"ZZZZ"
 .p4	db	"ZZZZ", 0x0A, 0x0D, 0
+
+;----------------------------------4th stage--------------------------------------------
+
+%include	"..\modules\real\kbc.s"
+
+stage_4th:
+	cdecl	puts, .s0
+
+;以下、A20ゲートを有効にする処理
+	cli				;割り込み禁止
+	cdecl	KBC_Cmd_Write, 0xAD	;キーボード操作無効化
+
+	cdecl	KBC_Cmd_Write, 0xD0	;コマンド0xD0(出力ポートの値を読み出すコマンド)を0x64に書き込む
+	cdecl	KBC_Data_Read, .key	;0x60ポートの値をkeyのアドレスに保存する
+
+	mov	bl, [.key]		;blに0x60ポートの値を格納
+	or	bl, 0x02		;0x60ポートの値と0b10でor演算
+
+	cdecl	KBC_Cmd_Write, 0xD1	;コマンド0xD1(ステータスレジスタB1を、A20が有効か無効かを指定するビットとして
+					;扱えるようにする)を0x64に書き込む
+	cdecl	KBC_Data_Write, bx	;bxの値を0x60に書き込む(B1が4行前のor演算で1になっているため、A20が有効化)
+
+	cdecl	KBC_Cmd_Write, 0xAE	;キーボード操作有効化
+	sti				;割り込み許可
+
+	cdecl	puts, .s1
+
+	jmp	$
+
+.s0:	db	"start 4th stage...", 0x0A, 0x0D, 0
+.s1:	db	"  A20 gate Enabled.", 0x0A, 0x0D, 0
+
+.key:	dw	0
 
 	times BOOT_SIZE - ($ - $$) db 0
