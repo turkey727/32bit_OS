@@ -190,10 +190,27 @@ stage_5th:
 .10T:	cdecl	puts, .e0			;イコール(失敗したら)じゃないなら再起動処理へ
 	call	reboot
 .10E:
-	jmp	$
+	jmp	stage_6th
 
 .s0:	db	"start 5th stage...", 0x0A, 0x0D, 0
 .e0:	db	"sorry, Failure load kernel...", 0x0A, 0x0D, 0
 
+;-----------------------------------6th stage----------------------------------------------
 
+stage_6th:
+	cdecl	puts, .s0
+
+.10L:
+	mov	ah, 0x00		;キー入力待ちのBIOSコールの設定
+	int	0x16			;キー入力待ち
+	cmp	al, ' '			;スペースを入力するまで繰り返し
+	jne	.10L
+
+	mov	ax, 0x0012		;ah = 0x00、al = 0x12でグラフィックスモードに移行するBIOSコールに設定
+	int	0x10			;グラフィックスモードに移行
+
+	jmp	$
+
+.s0:	db	"start 6th stage...", 0x0A, 0x0D, 0x0A, 0x0D
+	db	" [Push SPACE key]", 0x0A, 0x0D, 0
 	times BOOT_SIZE - ($ - $$) db 0
