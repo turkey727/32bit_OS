@@ -212,5 +212,5 @@ stage_6th:
 	jmp	$
 
 .s0:	db	"start 6th stage...", 0x0A, 0x0D, 0x0A, 0x0D
-	db	" [Push SPACE key]", 0x0A, 0x0D, 0
+	db	" [Press SPACE key to enter Graphics mode]", 0x0A, 0x0D, 0
 	times BOOT_SIZE - ($ - $$) db 0
