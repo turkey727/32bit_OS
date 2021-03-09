@@ -169,11 +169,31 @@ stage_4th:
 
 	cdecl	puts, .s1
 
-	jmp	$
+	jmp	stage_5th
 
 .s0:	db	"start 4th stage...", 0x0A, 0x0D, 0
 .s1:	db	"  A20 gate Enabled.", 0x0A, 0x0D, 0
 
 .key:	dw	0
+
+;-----------------------------------5th stage---------------------------------------------
+
+%include	"..\modules\real\lba_to_chs.s"
+%include	"..\modules\real\read_lba.s"
+
+stage_5th:
+	cdecl	puts, .s0
+
+	cdecl	read_lba, BOOT, BOOT_SECT, KERNEL_SECT, BOOT_END	;読み込んだセクタ数をaxに格納
+	cmp	ax, KERNEL_SECT			;読み込んだセクタ数とカーネルのセクタ数を比較
+.10Q:	jz	.10E				;イコール(読み出し成功)なら10Eにジャンプして次の処理へ
+.10T:	cdecl	puts, .e0			;イコール(失敗したら)じゃないなら再起動処理へ
+	call	reboot
+.10E:
+	jmp	$
+
+.s0:	db	"start 5th stage...", 0x0A, 0x0D, 0
+.e0:	db	"sorry, Failure load kernel...", 0x0A, 0x0D, 0
+
 
 	times BOOT_SIZE - ($ - $$) db 0
