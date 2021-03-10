@@ -1,5 +1,5 @@
 BOOT_LOAD	equ	0x7C00			;ブートプログラムの最初にロードするアドレスの定義
-BOOT_END	equ	(BOOT_LOAD + BOOT_SIZE)
+BOOT_END	equ	(BOOT_LOAD + BOOT_SIZE)	;ブートアドレスの最後
 
 BOOT_SIZE	equ	(1024 * 8)		;ブートプログラムのサイズ(8Kバイト)
 SECT_SIZE	equ	(512)			;セクタサイズの定義
