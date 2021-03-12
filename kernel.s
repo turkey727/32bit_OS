@@ -61,23 +61,25 @@ kernel:
 	mov	[edi + (80 * 6)], word 0xFF
 	mov	[edi + (80 * 7)], word 0xFF
 	
-	mov	esi, 'A'
-	shl	esi, 4
-	add	esi, [FONT_ADDR]
-
-	mov	edi, 2
-	mov	edi, 8
-	lea	edi, [edi * 4 + edi + 0xA_0000]
-
-	mov	ecx, 16
-.10L:
-	movsb
-	add	edi, 80 - 1
-	loop	.10L
+;以下13行、Aを出力する処理
+	cdecl	draw_char, 0, 0, 0x010F, 'H'
+	cdecl	draw_char, 1, 0, 0x010F, 'e'
+	cdecl	draw_char, 2, 0, 0x010F, 'l'
+	cdecl	draw_char, 3, 0, 0x010F, 'l'
+	cdecl	draw_char, 4, 0, 0x010F, 'o'
+	cdecl	draw_char, 5, 0, 0x010F, ' '
+	cdecl	draw_char, 6, 0, 0x010F, 'W'
+	cdecl	draw_char, 7, 0, 0x010F, 'o'
+	cdecl	draw_char, 8, 0, 0x010F, 'r'
+	cdecl	draw_char, 9, 0, 0x010F, 'l'
+	cdecl	draw_char, 10, 0, 0x010F, 'd'
 
 	jmp	$
 
 ALIGN	4, db	0
 FONT_ADDR:	dd	0
+
+%include	"..\modules\protect\vga.s"
+%include	"..\modules\protect\draw_char.s"
 
 	times	KERNEL_SIZE - ($ - $$)	db	0
