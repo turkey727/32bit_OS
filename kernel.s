@@ -60,26 +60,23 @@ kernel:
 	mov	[edi + (80 * 5)], word 0xFF
 	mov	[edi + (80 * 6)], word 0xFF
 	mov	[edi + (80 * 7)], word 0xFF
+
+	cdecl	draw_font, 63, 13
 	
-;以下13行、Aを出力する処理
-	cdecl	draw_char, 0, 0, 0x010F, 'H'
-	cdecl	draw_char, 1, 0, 0x010F, 'e'
-	cdecl	draw_char, 2, 0, 0x010F, 'l'
-	cdecl	draw_char, 3, 0, 0x010F, 'l'
-	cdecl	draw_char, 4, 0, 0x010F, 'o'
-	cdecl	draw_char, 5, 0, 0x010F, ' '
-	cdecl	draw_char, 6, 0, 0x010F, 'W'
-	cdecl	draw_char, 7, 0, 0x010F, 'o'
-	cdecl	draw_char, 8, 0, 0x010F, 'r'
-	cdecl	draw_char, 9, 0, 0x010F, 'l'
-	cdecl	draw_char, 10, 0, 0x010F, 'd'
+;以下、文字列を出力する処理
+	cdecl	draw_str, 25, 14, 0x010F, .s0
 
 	jmp	$
+
+
+.s0:	db	" Hello world! ", 0
 
 ALIGN	4, db	0
 FONT_ADDR:	dd	0
 
 %include	"..\modules\protect\vga.s"
 %include	"..\modules\protect\draw_char.s"
+%include	"..\modules\protect\draw_font.s"
+%include	"..\modules\protect\draw_str.s"
 
 	times	KERNEL_SIZE - ($ - $$)	db	0
