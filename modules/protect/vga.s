@@ -7,7 +7,7 @@ vga_set_read_plane:
 	push	edx
 
 	mov	ah, [ebp + 8]		;引数で指定したプレーンを代入
-	and	ah, 0x03		
+	and	ah, 0x03
 	mov	al, 0x04
 	mov	dx, 0x03CE
 	out	dx, ax
