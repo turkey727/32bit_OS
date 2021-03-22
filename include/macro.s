@@ -27,3 +27,21 @@ struc drive
 	.head	resw	1	;ヘッダ
 	.sect	resw	1	;セクタ
 endstruc
+
+;第一引数で指定したベクタ番号に、第二引数で指定した割り込み処理を設定するためのコード
+%macro	set_vect 1-*
+	push	eax
+	push	edi
+	
+	mov	edi, VECT_BASE + (%1 * 8)	;ベースアドレスと指定したベクタ番号*8を
+						;加算したもの(ベクタアドレス)を代入
+
+	mov	eax, %2				;指定した割り込み処理を代入
+
+	mov	[edi + 0], ax
+	shr	eax, 16
+	mov	[edi + 6], ax
+
+	pop	edi
+	pop	eax
+%endmacro

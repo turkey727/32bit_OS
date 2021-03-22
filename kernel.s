@@ -14,10 +14,17 @@ kernel:
 	add	eax, ebx
 	mov	[FONT_ADDR], eax
 
-	cdecl	draw_font, 63, 13
+	cdecl	draw_font, 63, 13		;フォントデータ一覧を出力
 	
-;以下、文字列を出力する処理
-	cdecl	draw_str, 25, 14, 0x010F, .s0
+	cdecl	draw_str, 25, 14, 0x010F, .s0	;文字列を出力する処理
+
+;以下2行、割り込み処理を実装するための処理
+	cdecl	init_int		;割り込みゲートディスクリプタを設定。
+	set_vect	0x00, int_zero_div	;割り込み処理の登録(ゼロ除算)
+
+;以下2行、ゼロ除算時に割り込みが発生するかのテスト
+	mov	al, 0
+	div	al
 
 .10L:
 	cdecl	rtc_get_time, RTC_TIME		;RTC_TIMEに取得した時刻データを保存
@@ -28,7 +35,7 @@ kernel:
 	jmp	$
 
 
-.s0:	db	" Hello world! ", 0
+.s0:	db	"  Hello world!  ", 0
 
 ALIGN	4, db	0
 FONT_ADDR:	dd	0
@@ -41,5 +48,6 @@ RTC_TIME:	dd	0
 %include	"..\modules\protect\itoa.s"
 %include	"..\modules\protect\rtc.s"
 %include	"..\modules\protect\draw_time.s"
+%include	".\modules\interrupt.s"
 
 	times	KERNEL_SIZE - ($ - $$)	db	0x00

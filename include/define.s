@@ -10,3 +10,5 @@ E820_RECORD_SIZE	equ	20		;BIOSコールで取得したメモリ情報を格納�
 KERNEL_LOAD	equ	0x0010_1000		;ロードするアドレス
 KERNEL_SIZE	equ	(1024 * 8)		;カーネルのサイズ
 KERNEL_SECT	equ	(KERNEL_SIZE / SECT_SIZE)	;カーネルのセクタ数の定義
+
+VECT_BASE	equ	0x0010_0000
