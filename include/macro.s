@@ -29,6 +29,7 @@ struc drive
 endstruc
 
 ;第一引数で指定したベクタ番号に、第二引数で指定した割り込み処理を設定するためのコード
+;もし3つ目の引数が指定されたらそれをゲートディスクリプタの属性として設定する。
 %macro	set_vect 1-*
 	push	eax
 	push	edi
@@ -38,10 +39,20 @@ endstruc
 
 	mov	eax, %2				;指定した割り込み処理を代入
 
+	%if 3 == %0
+		mov	[edi + 4], %3
+	%endif
+
 	mov	[edi + 0], ax
 	shr	eax, 16
 	mov	[edi + 6], ax
 
 	pop	edi
 	pop	eax
+%endmacro
+
+
+%macro	outp 2
+	mov	al, %2
+	out	%1, al
 %endmacro

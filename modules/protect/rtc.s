@@ -6,6 +6,16 @@ rtc_get_time:
 
 	push	ebx
 
+;以下.10Fまで、内蔵RAMの更新状況をフラグで確認する処理。
+	mov	al, 0x0A
+	out	0x70, al
+	in	al, 0x71
+	test	al, 0x80
+	je	.10F
+	mov	eax, 1
+	jmp	.10E
+.10F:
+
 ;以下3行、時間データを取得する処理
 	mov	al, 0x04		;alに時間データを得るためのアドレスを代入
 	out	0x70, al		;0x70ポートにアドレスを出力
@@ -30,6 +40,9 @@ rtc_get_time:
 	and	eax, 0x00_FF_FF_FF		;時刻データのみをマスク
 	mov	ebx, [ebp + 8]			;引数で指定した保存先アドレスをebxに代入
 	mov	[ebx], eax			;保存先アドレスに時刻データを代入
+
+	mov	eax, 0
+.10E:
 
 	pop	ebx
 
